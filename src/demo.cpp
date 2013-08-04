@@ -14,7 +14,6 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 */
 
 #include "demo.h"
@@ -32,20 +31,19 @@ demo::demo(string fileName, int maxShips,int delay,bool debug)
     ships = new Ship*[maxShips];
     thread = new pthread_t[maxShips];
 
-    // map initializing
+    // map initi        alizing
     initObjects("maps/mapa.bmp");
 
     //  map->writeMapToFile("mapa.txt");
-
     map->findStartingPoints();
 
     // take the list of the existing roads
     existingRoad = map->vec;
 
     // initialize free roads
-    for(unsigned int i=0;i<existingRoad.size();i++)
+    for(unsigned int i=0; i<existingRoad.size(); i++)
         freeRoad.push_back(i);
-    
+
     // initializing SDL
     initSDL(fileName);
 
@@ -60,21 +58,20 @@ int demo::getRoad()
     int road = -1;
     startPoint.x = -1;
     startPoint.y = -1;
-    if(freeRoad.size()>0)
+    if(freeRoad.size()>0) 
     {
         startPoint = *(existingRoad[freeRoad[0]]);
         road = freeRoad[0];
         freeRoad.erase(freeRoad.begin());
         return road;
     }
+
+
     return road;
 }
 
 // destructor
-demo::~demo()
-{
-
-}
+demo::~demo() {}
 
 // random value from [ min , max ]
 int demo::customDelay(int min,int max)
@@ -125,12 +122,10 @@ void demo::loadAvatarShip(string path,string name = "")
     if(debugEnabled)
         cout<<"Following avatars have been read: "<<endl;
 
-    for(int type=0;type<2;type++)
-    {
+    for(int type=0; type<2; type++) {
         ostringstream kat;
         kat<<"type_"<<type<<"/";
-        for(int i=0;i<8;i++)
-        {
+        for(int i=0; i<8; i++) {
             ostringstream ostr;
             ostr<<path<<kat.str()<<name<<i+1<<".bmp";
 
@@ -139,8 +134,7 @@ void demo::loadAvatarShip(string path,string name = "")
 
             AvatarShips[type][i] = loadImage(ostr.str());
 
-            if(AvatarShips[type][i]==NULL)
-            {
+            if(AvatarShips[type][i]==NULL) {
                 if(debugEnabled)
                     cout<<"Error during loading "<<i<<" ship"<<endl;
             }
@@ -156,12 +150,10 @@ SDL_Surface *demo::loadImage(string filename )
     loadedImage = IMG_Load( filename.c_str() );
 
     // If image loaded properly
-    if( loadedImage != NULL )
-    {
+    if( loadedImage != NULL ) {
         optimizedImage = SDL_DisplayFormat( loadedImage );
         SDL_FreeSurface( loadedImage );
-        if( optimizedImage != NULL )
-        {
+        if( optimizedImage != NULL ) {
             SDL_SetColorKey( optimizedImage, SDL_SRCCOLORKEY, SDL_MapRGB( optimizedImage->format, 0, 0, 0xFF ) );
         }
     }
@@ -180,26 +172,19 @@ void* threadF(void* obj)
 // main function of the app. Is responsible for keyboard events, refresing the screen,
 // creating new ships, setting new starting points, etc.
 void demo::play()
-{ 
-    while(true)
-    {
-        while( SDL_PollEvent( &event ) )
-        {
+{
+    while(true) {
+        while( SDL_PollEvent( &event ) ) {
             if(event.type == SDL_QUIT)
                 return;
         }
 
-        if( curShips < maxShips )
-        {
-            for(int i=0;i<maxShips;i++)
-            {
-                if(ships[i]==NULL)
-                {
+        if( curShips < maxShips ) {
+            for(int i=0; i<maxShips; i++) {
+                if(ships[i]==NULL) {
                     int road = getRoad();
-                    if(road > -1)
-                    {
-                        if(debugEnabled)
-                        {
+                    if(road > -1) {
+                        if(debugEnabled) {
                             cout<<"Created ship nb "<<i<<endl;
                             cout<<"Ship "<<i<<" took the road: "<<road<<"  ";
                             cout<<"Starting point X: "<<startPoint.x<<" Y: "<<startPoint.y<<endl;
@@ -219,16 +204,12 @@ void demo::play()
         SDL_BlitSurface( image, NULL, screen, NULL );
 
         pthread_mutex_lock (&mutex);
-        for(int i=0;i<maxShips;i++)
-        {
-            if(ships[i]!=NULL && ships[i]->isAlive())
-            {
+        for(int i=0; i<maxShips; i++) {
+            if(ships[i]!=NULL && ships[i]->isAlive()) {
                 applySurface(ships[i]->get_x(),ships[i]->get_y(),AvatarShips[ships[i]->getAvatarType()][ships[i]->getAvatar()],screen,NULL);
                 if(debugEnabled)
                     cout<<"Ship nb "<<i<<" position: X = "<<ships[i]->get_x()<<" Y = "<<ships[i]->get_y()<<endl;
-            }
-            else
-            {
+            } else {
                 curShips--;
                 freeRoad.push_back(ships[i]->getRoad());
 

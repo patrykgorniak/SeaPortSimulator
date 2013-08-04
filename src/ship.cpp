@@ -55,7 +55,7 @@ int Ship::getRoad()
 
 // take current x position of the ship
 int Ship::get_x()
-{  
+{
     return current.x;
 }
 
@@ -119,7 +119,7 @@ void Ship::changePoints()
 
 // calculate next move
 void Ship::calculateNextPoint()
-{  
+{
     // go up
     if( (previous.y - current.y) > 0)
     {
@@ -346,7 +346,7 @@ bool Ship::findAbove()
 
 // find next free point to the right of current position
 bool Ship::findOnRight()
-{    
+{
     if ( ( current.y >= 1) && (current.x < (mapWidth - 1) ) && map[current.y][current.x + 1] < 0.7 )
     {
         avatar = 0;
@@ -411,7 +411,7 @@ bool Ship::findBelow()
 
 // find next free point on the left of the current position
 bool Ship::findOnLeft()
-{   
+{
     if ( current.x > 0 && map[current.y][current.x - 1] < 0.7 )
     {
         avatar = 4;

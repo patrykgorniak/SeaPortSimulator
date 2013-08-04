@@ -29,25 +29,22 @@ using namespace std;
 #ifndef SHIP_H
 #define SHIP_H
 
-class Point
-{
-  public:
+class Point {
+public:
     int x;
     int y;
-    
-    Point()
-    {}
-    
-    Point(int x_,int y_)
-    {
-      this->x = x_; 
-      this->y = y_;
+
+    Point() {
+    }
+
+    Point(int x_,int y_) {
+        this->x = x_;
+        this->y = y_;
     }
 };
 
-class Ship
-{
-  public:
+class Ship {
+public:
     Ship(int x, int y,int road, double** map,int mapWidth,int mapHeight, int delay, pthread_mutex_t& mutex_,bool debug);
     ~Ship();
     int get_x();
@@ -59,17 +56,17 @@ class Ship
     int getAvatar();
     bool isAlive();
     int getRoad();
-    
-  private:
+
+private:
     Point previous,current,next;
     bool alive;
     int avatar,delay,mapWidth,mapHeight,road,avatarType;
     double** map;
     bool isInPort;
     bool debugEnabled;
-    
+
     pthread_mutex_t& mutex;
-    
+
     void calculateNextPoint();
     bool findNextPoint(char);
     bool findOnLeft();

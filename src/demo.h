@@ -30,34 +30,34 @@
 
 class demo
 {
-  public:
+public:
     demo(string fileName, int maxShips, int delay,bool debug);
     ~demo();
     void play();
-    
-  private:
+
+private:
     SDL_Surface* image;
     SDL_Surface* screen;
     SDL_Event event;
     SDL_Surface* AvatarShips[2][8];
-    
+
     Map *map;
     Ship** ships;
-    
+
     int maxShips,curShips,delay;
     static int max;
-    
+
     bool debugEnabled;
-    
+
     pthread_mutex_t mutex;
     pthread_t *thread;
-    
+
     Point startPoint;
     vector<int> freeRoad;
     vector<Point*> existingRoad;
-    
+
     SDL_Surface * loadImage(string);
-    
+
     int randType(int);
     void initSDL(string);
     void initObjects(string);

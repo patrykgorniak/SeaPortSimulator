@@ -28,30 +28,30 @@ using namespace std;
 using namespace Magick;
 
 #ifndef SCENE_H
-#define SCENE_H 
+#define SCENE_H
 
 class Map
 {
-  public:
+public:
     Map(string fileName,bool debug);
     ~Map();
-    
+
     Point findStartingPoints();
     void writeMapToFile(string);
-    
+
     int getWidth();
     int getHeight();
     int getDepth();
     double** getMap();
     vector<Point*> vec;
-    
-  private:
+
+private:
     Image *obraz;
     double **mapa;
     int width,height,depth;
-    
+
     bool debugEnabled;
-    
+
     bool allocateMap();
     void revokeMap();
     void mapToArray();
