@@ -56,6 +56,7 @@ public:
     int getAvatar();
     bool isAlive();
     int getRoad();
+    bool isFinished();
 
 private:
     Point previous,current,next;
@@ -64,6 +65,7 @@ private:
     double** map;
     bool isInPort;
     bool debugEnabled;
+    bool finihed;
 
     pthread_mutex_t& mutex;
 

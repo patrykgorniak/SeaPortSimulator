@@ -17,11 +17,13 @@
 
 */
 #include <iostream>
-#include <ImageMagick/Magick++.h>
+#include <ImageMagick-6/Magick++.h>
 #include "string.h"
 #include "fstream"
 #include "vector"
-
+#include <assert.h>
+#include <sstream>
+#include "iostream"
 #include "ship.h"
 
 using namespace std;
@@ -43,13 +45,13 @@ public:
     int getHeight();
     int getDepth();
     double** getMap();
-    vector<Point*> vec;
+    vector<Point*> getStartingPoints();
 
 private:
-    Image *obraz;
+    Magick::Image *obraz;
     double **mapa;
     int width,height,depth;
-
+    vector<Point*> vec;
     bool debugEnabled;
 
     bool allocateMap();

@@ -39,40 +39,62 @@ Map::~Map()
     revokeMap();
 }
 
+vector<Point*> Map::getStartingPoints()
+{
+    return vec;
+}
+
 // find starting points for ships
 Point Map::findStartingPoints()
 {
     Point* pkt;
+    int counter = 0;
 
     //vertical searching on the edges
     for(int i = 0; i < height; i++)
     {
-        if(mapa[i][0] < 0.7)
+        if(mapa[i][0] == 1)
         {
+            counter++;
             pkt = new Point(0,i);
             vec.push_back(pkt);
+            if(debugEnabled)
+                cout<<"Found point: x="<<pkt->x<<" y="<<pkt->y<<endl;
         }
 
-        if(mapa[i][width - 1] < 0.7)
+        if(mapa[i][width - 1] == 1)
         {
+            counter++;
             pkt = new Point(width - 1,i);
             vec.push_back(pkt);
+            if(debugEnabled)
+                cout<<"Found point: x="<<pkt->x<<" y="<<pkt->y<<endl;
         }
     }
     //horizontal searching on the edges
     for(int i=0; i<width; i++)
     {
-        if(mapa[0][i] < 0.7)
+        if(mapa[0][i] == 1)
         {
+            counter++;
             pkt = new Point(i,0);
             vec.push_back(pkt);
+            if(debugEnabled)
+                cout<<"Found point: x="<<pkt->x<<" y="<<pkt->y<<endl;
+
         }
-        if(mapa[height - 1][i] < 0.7)
+        if(mapa[height - 1][i] == 1)
         {
+            counter++;
             pkt = new Point(i,height - 1);
             vec.push_back(pkt);
+            if(debugEnabled)
+                cout<<"Found point: x="<<pkt->x<<" y="<<pkt->y<<endl;
         }
     }
+
+    if(debugEnabled)
+        cout<<"Found "<<counter<<" points"<<endl;
 
     return displayFirstPoints(vec);
 }
@@ -99,12 +121,12 @@ Point Map::displayFirstPoints(vector< Point* >& vec)
 
 void Map::init(string fileName)
 {
-    obraz = new Image();
-    obraz->read(fileName.c_str());
+//    obraz = new Magick::Image();
+//    obraz->read(fileName.c_str());
 
-    height = obraz->rows();
-    width = obraz->columns();
-    depth = obraz->depth();
+    height = 719;//obraz->rows();
+    width = 1024;//obraz->columns();
+    depth = 8;//obraz->depth();
 
     if(debugEnabled)
     {
@@ -140,10 +162,10 @@ void Map::writeMapToFile(string fileName)
     {
         for(int j=0; j<width; j++)
         {
-            if(mapa[i][j] < 0.5)
-                str <<"X";
+            if(mapa[i][j])
+                str <<"o";
             else
-                str <<" ";
+                str <<'.';
         }
         str<<endl;
     }
@@ -152,14 +174,21 @@ void Map::writeMapToFile(string fileName)
 // convert bitmap to the virtual map with roads for the ships
 void Map::mapToArray()
 {
-    for(int i=0; i<height; i++)
+    ifstream file;
+    string line;
+    file.open("map.bin");
+    int x,y;
+    if(file.is_open())
     {
-        for(int j=0; j<width; j++)
+        while(getline(file, line, ';'))
         {
-            ColorGray c = obraz->pixelColor(j,i);
-            mapa[i][j] = c.shade();
+            std::stringstream   linestream(line);
+            linestream >> x >> y;
+            mapa[y][x] = 1;
         }
     }
+
+    file.close();
 }
 
 // allocate memory for the map
@@ -180,7 +209,7 @@ void Map::revokeMap()
 
     if(mapa!=NULL)
     {
-        for(int i=0; i<width; i++)
+        for(int i=0; i<height; i++)
             delete[] mapa[i];
         delete[] mapa;
 

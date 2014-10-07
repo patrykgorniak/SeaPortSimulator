@@ -36,31 +36,30 @@ bool help()
         return false;
     else
         return true;
-
-
 }
 
 
 int main(int argc, char **argv)
 {
-    int ships,speed,debug;
+    int ships,speed;
+    bool debug;
 
     if(argc == 4) {
         ships = atoi(argv[1]);
         speed = atoi(argv[2]);
-        debug = atoi(argv[3]);
+        debug = static_cast<bool>(atoi(argv[3]));
     } else {
         if(help()) {
             ships = 5;
             speed = 80;
-            debug = 0;
+            debug = false;
         } else
             exit(0);
     }
 
 
     srand(time(0));
-    demo* dem = new demo("scene/scena.bmp",ships,speed,(bool)debug);
+    demo* dem = new demo("scene/scena.jpeg", ships, speed, debug);
     dem->play();
-    dem->~demo();
+    exit(0);
 }

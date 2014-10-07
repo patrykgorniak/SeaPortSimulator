@@ -7,10 +7,11 @@ set(SEA_PORT_SRCS
 
 set(CMAKE_CXX_FLAGS "-g -Wall -std=c++11")
 
-#TODO: Add dependencies: ImageMagick,SDL-image,copy needed files to destination directory
+# Find needed packages
+find_package(ImageMagick COMPONENTS Magick++)
+find_package(SDL)
+find_package(SDL_image)
 
-include_directories(/usr/include/ImageMagick/)
-#find_package(Magick++)
-#find_package(SDL)
+include_directories(${ImageMagick_INCLUDE_DIRS} ${SDL_INCLUDE_DIRS} ${SDL_IMAGE_INCLUDE_DIRS})
 add_executable(${PROJECT_NAME} ${SEA_PORT_SRCS})
-target_link_libraries(${PROJECT_NAME} Magick++ SDL SDL_image)
+target_link_libraries(${PROJECT_NAME} ${ImageMagick_LIBRARIES} ${SDL_IMAGE_LIBRARIES} ${SDL_LIBRARY})

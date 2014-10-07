@@ -18,7 +18,8 @@
 
 #include "demo.h"
 
-demo::demo(string fileName, int maxShips,int delay,bool debug)
+demo::demo(string fileName, int maxShips,int delay,bool debug):
+    ships(0)
 {
     // Initializing variables
     this->maxShips = maxShips;
@@ -29,20 +30,20 @@ demo::demo(string fileName, int maxShips,int delay,bool debug)
     this->debugEnabled = debug;
 
     ships = new Ship*[maxShips];
+    for(int i=0; i<maxShips;i++)
+        ships[i]=NULL;
+
     thread = new pthread_t[maxShips];
 
-    // map initi        alizing
-    initObjects("maps/mapa.bmp");
+    // map initializing
+    initObjects("maps/maps.jpeg");
 
-    //  map->writeMapToFile("mapa.txt");
+    map->writeMapToFile("mapa.txt");
     map->findStartingPoints();
 
-    // take the list of the existing roads
-    existingRoad = map->vec;
-
     // initialize free roads
-    for(unsigned int i=0; i<existingRoad.size(); i++)
-        freeRoad.push_back(i);
+    for(unsigned int i=0; i < map->getStartingPoints().size(); i++)
+        freeRoads.push_back(i);
 
     // initializing SDL
     initSDL(fileName);
@@ -56,22 +57,21 @@ demo::demo(string fileName, int maxShips,int delay,bool debug)
 int demo::getRoad()
 {
     int road = -1;
-    startPoint.x = -1;
-    startPoint.y = -1;
-    if(freeRoad.size()>0) 
+
+    if(freeRoads.size() > 0)
     {
-        startPoint = *(existingRoad[freeRoad[0]]);
-        road = freeRoad[0];
-        freeRoad.erase(freeRoad.begin());
+        road = freeRoads.at(0);
+        freeRoads.erase(freeRoads.begin());
         return road;
     }
-
-
     return road;
 }
 
 // destructor
-demo::~demo() {}
+demo::~demo()
+{
+    pthread_exit(NULL);
+}
 
 // random value from [ min , max ]
 int demo::customDelay(int min,int max)
@@ -89,7 +89,7 @@ void demo::initObjects(string path)
         cout<<"Initializing map"<<endl;
 
     pthread_mutex_init(&mutex,NULL);
-    map = new Map(path,debugEnabled);
+    map = new Map(path, debugEnabled);
 }
 
 // initializing SDL
@@ -105,7 +105,7 @@ void demo::initSDL(string fileName)
     SDL_WM_SetCaption("Port demo",NULL);
 
     // Configure the screen
-    screen = SDL_SetVideoMode( 1024, 719, 32, SDL_SWSURFACE );
+    screen = SDL_SetVideoMode( 1024, 720, 32, SDL_SWSURFACE );
 
     // load background
     image = loadImage( fileName );
@@ -171,59 +171,92 @@ void* threadF(void* obj)
 
 // main function of the app. Is responsible for keyboard events, refresing the screen,
 // creating new ships, setting new starting points, etc.
+void demo::createNewShips()
+{
+    for(int i=0; i<maxShips; i++)
+    {
+        if(ships[i]==NULL)
+        {
+            int road;
+            if( ( road = getRoad()) > -1)
+            {
+                if(debugEnabled)
+                {
+                    cout<<"Created ship nb "<<i<<endl;
+                    cout<<"Ship "<<i<<" took the road: "<<road<<"  ";
+                    cout<<"Starting point X: "<<startPoint.x<<" Y: "<<startPoint.y<<endl;
+                }
+
+                Point p((map->getStartingPoints()[road])->x, (map->getStartingPoints()[road])->y);
+
+                ships[i] = new Ship(p.x,p.y, road, map->getMap(), map->getWidth(), map->getHeight(), customDelay(20,70), mutex, debugEnabled);
+                ships[i]->setAvatarType(randType(2));
+                curShips++;
+
+                pthread_create(&thread[i], NULL, threadF, (void*)ships[i]);
+            }
+        }
+    }
+}
+
+void demo::cleanupShips()
+{
+    for(int i=0; i<maxShips; i++)
+    {
+        if(ships[i]!=NULL && !ships[i]->isAlive() && ships[i]->isFinished())
+        {
+            freeRoads.push_back(ships[i]->getRoad());
+            delete ships[i];
+            ships[i]=NULL;
+
+            if(debugEnabled)
+                cout<<"Destroyed ship: "<<i<<endl;
+
+            curShips--;
+        }
+    }
+}
+
+void demo::repaint()
+{
+    pthread_mutex_lock (&mutex);
+    for(int i=0; i < maxShips; i++)
+    {
+        if(ships[i]!=NULL && ships[i]->isAlive())
+        {
+            applySurface(ships[i]->get_x(), ships[i]->get_y(), AvatarShips[ships[i]->getAvatarType()][ships[i]->getAvatar()], screen, NULL);
+
+//            if(debugEnabled) {
+//                cout<<"Ship nb "<<i<<" position: X = "<<ships[i]->get_x()<<" Y = "<<ships[i]->get_y()<<endl;
+//            }
+        }
+    }
+    pthread_mutex_unlock(&mutex);
+}
+
 void demo::play()
 {
-    while(true) {
-        while( SDL_PollEvent( &event ) ) {
+    while(true)
+    {
+        while( SDL_PollEvent( &event ) )
+        {
             if(event.type == SDL_QUIT)
                 return;
         }
 
-        if( curShips < maxShips ) {
-            for(int i=0; i<maxShips; i++) {
-                if(ships[i]==NULL) {
-                    int road = getRoad();
-                    if(road > -1) {
-                        if(debugEnabled) {
-                            cout<<"Created ship nb "<<i<<endl;
-                            cout<<"Ship "<<i<<" took the road: "<<road<<"  ";
-                            cout<<"Starting point X: "<<startPoint.x<<" Y: "<<startPoint.y<<endl;
-                        }
+//        if(debugEnabled) {
+//            cout<<"Current ships: "<< curShips<<endl;
+//            cout<<"Max ships: " << maxShips<<endl;
+//        }
 
-                        ships[i] = new Ship(startPoint.x,startPoint.y,road,map->getMap(),map->getWidth(),map->getHeight(),customDelay(20,70),mutex,debugEnabled);
-                        ships[i]->setAvatarType(randType(2));
-                        curShips++;
-
-                        pthread_create(&thread[i],NULL,threadF,(void*)ships[i]);
-                    }
-                }
-            }
+        cleanupShips();
+        if( curShips < maxShips )
+        {
+            createNewShips();
         }
-
         //Apply image to screen
         SDL_BlitSurface( image, NULL, screen, NULL );
-
-        pthread_mutex_lock (&mutex);
-        for(int i=0; i<maxShips; i++) {
-            if(ships[i]!=NULL && ships[i]->isAlive()) {
-                applySurface(ships[i]->get_x(),ships[i]->get_y(),AvatarShips[ships[i]->getAvatarType()][ships[i]->getAvatar()],screen,NULL);
-                if(debugEnabled)
-                    cout<<"Ship nb "<<i<<" position: X = "<<ships[i]->get_x()<<" Y = "<<ships[i]->get_y()<<endl;
-            } else {
-                curShips--;
-                freeRoad.push_back(ships[i]->getRoad());
-
-                if(debugEnabled)
-                    cout<<"Ship "<<i<<" frees the road: "<<ships[i]->getRoad()<<endl;
-
-                delete ships[i];
-                ships[i]=NULL;
-                if(debugEnabled)
-                    cout<<"Destroy ship "<<i<<endl;
-            }
-        }
-        pthread_mutex_unlock(&mutex);
-
+        repaint();
         SDL_Flip( screen );
         SDL_Delay(delay);
     }

@@ -35,6 +35,8 @@ public:
     ~demo();
     void play();
 
+    void cleanupShips();
+    void repaint();
 private:
     SDL_Surface* image;
     SDL_Surface* screen;
@@ -53,12 +55,13 @@ private:
     pthread_t *thread;
 
     Point startPoint;
-    vector<int> freeRoad;
-    vector<Point*> existingRoad;
+    vector<int> freeRoads;
+    vector<Point*> existingRoads;
 
     SDL_Surface * loadImage(string);
 
     int randType(int);
+    void createNewShips();
     void initSDL(string);
     void initObjects(string);
     void applySurface( int, int, SDL_Surface*, SDL_Surface*, SDL_Rect*);

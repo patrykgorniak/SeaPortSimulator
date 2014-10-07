@@ -20,7 +20,10 @@
 
 
 // Constructor
-Ship::Ship(int x, int y, int road, double** map, int mapWidth, int mapHeight, int delay, pthread_mutex_t& mutex_,bool debug): mutex(mutex_)
+Ship::Ship(int x, int y, int road, double** map, int mapWidth, int mapHeight, int delay, pthread_mutex_t& mutex_,bool debug):
+    map(map),
+    finihed(false),
+    mutex(mutex_)
 {
     // Initializing variables
     this->debugEnabled = debug;
@@ -44,7 +47,8 @@ Ship::Ship(int x, int y, int road, double** map, int mapWidth, int mapHeight, in
     this->mapHeight = mapHeight;
     this->mapWidth = mapWidth;
 
-    this->map = map;
+    if(debugEnabled)
+        cout<< "New ship created!"<<endl;
 }
 
 // take the road for ship
@@ -68,7 +72,7 @@ int Ship::get_y()
 // calculate next point for move
 void Ship::move()
 {
-    while(alive)
+    do
     {
         pthread_mutex_lock (&mutex);
         calculateNextPoint();
@@ -85,16 +89,23 @@ void Ship::move()
 
             usleep(timeInPort(2,10)*900000);
         }
-        isInPort = false;
 
+        isInPort = false;
         usleep(delay*500);
-    }
+    } while(alive);
+
+    finihed = true;
 }
 
 // check if the ship is on or off the map
 bool Ship::isAlive()
 {
     return alive;
+}
+
+bool Ship::isFinished()
+{
+    return finihed;
 }
 
 // take the avatar type
@@ -302,7 +313,7 @@ bool Ship::findAbove()
     // 	x
     //  	x
     // find next point above
-    if ( ( current.y >= 1) && (map[current.y - 1][current.x] < 0.7) )
+    if ( ( current.y >= 1) && (map[current.y - 1][current.x] == 1) )
     {
         avatar = 6;
         next.x = current.x;
@@ -313,7 +324,7 @@ bool Ship::findAbove()
     // 	x
     //  	x
     // find next point above and on the left
-    else if( ( current.y >= 1) && (current.x - 1) >= 0 && map[current.y - 1][current.x - 1] < 0.7 )
+    else if( ( current.y >= 1) && (current.x - 1) >= 0 && map[current.y - 1][current.x - 1] == 1)
     {
         avatar = 5;
         next.x = current.x - 1;
@@ -324,7 +335,7 @@ bool Ship::findAbove()
     // 	x
     //  	x
     // find next point uabove and on the right
-    else if( ( current.y >= 1) && (current.x + 1) < mapWidth && map[current.y - 1][current.x + 1] < 0.7 )
+    else if( ( current.y >= 1) && (current.x + 1) < mapWidth && map[current.y - 1][current.x + 1] == 1 )
     {
         avatar = 7;
         next.x = current.x + 1;
@@ -347,7 +358,7 @@ bool Ship::findAbove()
 // find next free point to the right of current position
 bool Ship::findOnRight()
 {
-    if ( ( current.y >= 1) && (current.x < (mapWidth - 1) ) && map[current.y][current.x + 1] < 0.7 )
+    if ( ( current.y >= 1) && (current.x < (mapWidth - 1) ) && map[current.y][current.x + 1] == 1 )
     {
         avatar = 0;
         next.x = current.x + 1;
@@ -371,7 +382,7 @@ bool Ship::findOnRight()
 bool Ship::findBelow()
 {
     // find next free point below
-    if ( (current.x >= 0 && current.x < mapWidth && current.y < (mapHeight - 1)) && map[current.y + 1][current.x] < 0.7 )
+    if ( (current.x >= 0 && current.x < mapWidth && current.y < (mapHeight - 1)) && map[current.y + 1][current.x] == 1 )
     {
         avatar = 2;
         next.x = current.x;
@@ -380,7 +391,7 @@ bool Ship::findBelow()
     }
 
     // find next free point below and on the left
-    else if ( (current.x > 0 && current.x < mapWidth && current.y < (mapHeight - 1)) && map[current.y + 1][current.x - 1] < 0.7 )
+    else if ( (current.x > 0 && current.x < mapWidth && current.y < (mapHeight - 1)) && map[current.y + 1][current.x - 1] == 1 )
     {
         avatar = 3;
         next.x = current.x - 1;
@@ -388,7 +399,7 @@ bool Ship::findBelow()
         return true;
     }
     // find next free point below and on the right
-    else if ( (current.x >= 0  && current.x < mapWidth && current.y < (mapHeight - 1)) && map[current.y + 1][current.x + 1] < 0.7 )
+    else if ( (current.x >= 0  && current.x < mapWidth-1 && current.y < (mapHeight - 1)) && map[current.y + 1][current.x + 1] == 1 )
     {
         avatar = 1;
         next.x = current.x + 1;
@@ -412,7 +423,7 @@ bool Ship::findBelow()
 // find next free point on the left of the current position
 bool Ship::findOnLeft()
 {
-    if ( current.x > 0 && map[current.y][current.x - 1] < 0.7 )
+    if ( current.x > 0 && map[current.y][current.x - 1] == 1 )
     {
         avatar = 4;
         next.x = current.x - 1;
@@ -438,7 +449,6 @@ void Ship::setAvatar(int avatar)
     this->avatar = avatar;
 }
 
-// destructor
 Ship::~Ship()
 {
 
