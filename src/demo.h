@@ -28,22 +28,20 @@
 #ifndef DEMO_H
 #define DEMO_H
 
-class demo
+class Demo
 {
 public:
-    demo(string fileName, int maxShips, int delay,bool debug);
-    ~demo();
+    Demo(string fileName, int maxShips, int delay, bool debug);
+    ~Demo();
     void play();
 
-    void cleanupShips();
-    void repaint();
 private:
     SDL_Surface* image;
     SDL_Surface* screen;
     SDL_Event event;
     SDL_Surface* AvatarShips[2][8];
 
-    Map *map;
+    BoardManager *map;
     Ship** ships;
 
     int maxShips,curShips,delay;
@@ -56,17 +54,18 @@ private:
 
     Point startPoint;
     vector<int> freeRoads;
-    vector<Point*> existingRoads;
 
     SDL_Surface * loadImage(string);
 
-    int randType(int);
+    void repaint();
+    void cleanupShips();
     void createNewShips();
     void initSDL(string);
     void initObjects(string);
     void applySurface( int, int, SDL_Surface*, SDL_Surface*, SDL_Rect*);
     void loadAvatarShip(string path, string name);
     int getRoad();
+    int randType(int);
     int customDelay(int min,int max);
 };
 

@@ -58,19 +58,19 @@ int Ship::getRoad()
 }
 
 // take current x position of the ship
-int Ship::get_x()
+int Ship::getX()
 {
     return current.x;
 }
 
 // take current y position of the ship
-int Ship::get_y()
+int Ship::getY()
 {
     return current.y;
 }
 
 // calculate next point for move
-void Ship::move()
+void Ship::run()
 {
     do
     {

@@ -34,8 +34,7 @@ public:
     int x;
     int y;
 
-    Point() {
-    }
+    Point(): x(0), y(0) { }
 
     Point(int x_,int y_) {
         this->x = x_;
@@ -45,11 +44,11 @@ public:
 
 class Ship {
 public:
-    Ship(int x, int y,int road, double** map,int mapWidth,int mapHeight, int delay, pthread_mutex_t& mutex_,bool debug);
+    Ship(int x, int y, int road, double** map, int mapWidth, int mapHeight, int delay, pthread_mutex_t& mutex_, bool debug);
     ~Ship();
-    int get_x();
-    int get_y();
-    void move();
+    int getX();
+    int getY();
+    void run();
     void setAvatar(int);
     void setAvatarType(int);
     int getAvatarType();
@@ -76,7 +75,7 @@ private:
     bool findAbove();
     bool findBelow();
     void changePoints();
-    int timeInPort(int min,int max);
+    int timeInPort(int min, int max);
 };
 
 #endif // SHIP_H

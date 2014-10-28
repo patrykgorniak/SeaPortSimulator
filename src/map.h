@@ -17,7 +17,6 @@
 
 */
 #include <iostream>
-#include <ImageMagick-6/Magick++.h>
 #include "string.h"
 #include "fstream"
 #include "vector"
@@ -27,39 +26,40 @@
 #include "ship.h"
 
 using namespace std;
-using namespace Magick;
 
 #ifndef SCENE_H
 #define SCENE_H
 
-class Map
+typedef double ** Board;
+typedef vector<Point*> StartingPoints;
+
+class BoardManager
 {
 public:
-    Map(string fileName,bool debug);
-    ~Map();
+    BoardManager(string fileName, bool debug);
+    ~BoardManager();
 
-    Point findStartingPoints();
-    void writeMapToFile(string);
+    void saveToFile(string);
 
     int getWidth();
     int getHeight();
-    int getDepth();
-    double** getMap();
-    vector<Point*> getStartingPoints();
+
+    Board getBoard();
+    StartingPoints getStartingPoints();
 
 private:
-    Magick::Image *obraz;
-    double **mapa;
-    int width,height,depth;
-    vector<Point*> vec;
+    Board m_board;
+    StartingPoints m_startingPoints;
+    int width, height;
     bool debugEnabled;
 
-    bool allocateMap();
-    void revokeMap();
-    void mapToArray();
-    void init(string fileName);
+    void init();
+    void allocateBoard();
+    void destroyBoard();
+    void readBoardFromFile();
+    void findStartingPoints();
 
-    Point displayFirstPoints(vector<Point*>&);
+    void displayFirstPoints(StartingPoints &startingPoints);
 };
 
 #endif // SCENE_H

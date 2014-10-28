@@ -1,5 +1,5 @@
 /*
-    "Port Demo" is a program which simulate port.
+    "Port Demo" is an application which simulate seaport.
     Copyright (C) 2010  Patryk Górniak <patryk.lukasz.gorniak@gmail.com>
 
     This program is free software: you can redistribute it and/or modify
@@ -59,7 +59,8 @@ int main(int argc, char **argv)
 
 
     srand(time(0));
-    demo* dem = new demo("scene/scena.jpeg", ships, speed, debug);
-    dem->play();
+    Demo *m_demo = new Demo("scene/scena.jpeg", ships, speed, debug);
+    m_demo->play();
     exit(0);
 }
+

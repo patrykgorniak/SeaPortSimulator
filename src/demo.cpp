@@ -18,7 +18,7 @@
 
 #include "demo.h"
 
-demo::demo(string fileName, int maxShips,int delay,bool debug):
+Demo::Demo(string fileName, int maxShips,int delay,bool debug):
     ships(0)
 {
     // Initializing variables
@@ -38,8 +38,7 @@ demo::demo(string fileName, int maxShips,int delay,bool debug):
     // map initializing
     initObjects("maps/maps.jpeg");
 
-    map->writeMapToFile("mapa.txt");
-    map->findStartingPoints();
+    //    map->saveToFile("mapa.txt");
 
     // initialize free roads
     for(unsigned int i=0; i < map->getStartingPoints().size(); i++)
@@ -54,7 +53,7 @@ demo::demo(string fileName, int maxShips,int delay,bool debug):
 
 
 // take the first free road
-int demo::getRoad()
+int Demo::getRoad()
 {
     int road = -1;
 
@@ -68,13 +67,13 @@ int demo::getRoad()
 }
 
 // destructor
-demo::~demo()
+Demo::~Demo()
 {
     pthread_exit(NULL);
 }
 
 // random value from [ min , max ]
-int demo::customDelay(int min,int max)
+int Demo::customDelay(int min,int max)
 {
     int time;
     time = rand()%(max - min);
@@ -83,17 +82,17 @@ int demo::customDelay(int min,int max)
 }
 
 // Initializing map
-void demo::initObjects(string path)
+void Demo::initObjects(string path)
 {
     if(debugEnabled)
         cout<<"Initializing map"<<endl;
 
     pthread_mutex_init(&mutex,NULL);
-    map = new Map(path, debugEnabled);
+    map = new BoardManager(path, debugEnabled);
 }
 
 // initializing SDL
-void demo::initSDL(string fileName)
+void Demo::initSDL(string fileName)
 {
     if(debugEnabled)
         cout<<"Initializing SDL"<<endl;
@@ -117,7 +116,7 @@ void demo::initSDL(string fileName)
     SDL_Flip( screen );
 }
 
-void demo::loadAvatarShip(string path,string name = "")
+void Demo::loadAvatarShip(string path,string name = "")
 {
     if(debugEnabled)
         cout<<"Following avatars have been read: "<<endl;
@@ -143,7 +142,7 @@ void demo::loadAvatarShip(string path,string name = "")
 }
 
 // load BMP (bitmap)
-SDL_Surface *demo::loadImage(string filename )
+SDL_Surface *Demo::loadImage(string filename )
 {
     SDL_Surface* loadedImage = NULL;
     SDL_Surface* optimizedImage = NULL;
@@ -163,15 +162,14 @@ SDL_Surface *demo::loadImage(string filename )
 // thread function
 void* threadF(void* obj)
 {
-    Ship* stat=(Ship*)obj;
-    stat->move();
-
+    Ship* m_ship=(Ship*)obj;
+    m_ship->run();
     pthread_exit(NULL);
 }
 
 // main function of the app. Is responsible for keyboard events, refresing the screen,
 // creating new ships, setting new starting points, etc.
-void demo::createNewShips()
+void Demo::createNewShips()
 {
     for(int i=0; i<maxShips; i++)
     {
@@ -189,7 +187,7 @@ void demo::createNewShips()
 
                 Point p((map->getStartingPoints()[road])->x, (map->getStartingPoints()[road])->y);
 
-                ships[i] = new Ship(p.x,p.y, road, map->getMap(), map->getWidth(), map->getHeight(), customDelay(20,70), mutex, debugEnabled);
+                ships[i] = new Ship(p.x,p.y, road, map->getBoard(), map->getWidth(), map->getHeight(), customDelay(20,70), mutex, debugEnabled);
                 ships[i]->setAvatarType(randType(2));
                 curShips++;
 
@@ -199,7 +197,7 @@ void demo::createNewShips()
     }
 }
 
-void demo::cleanupShips()
+void Demo::cleanupShips()
 {
     for(int i=0; i<maxShips; i++)
     {
@@ -217,24 +215,20 @@ void demo::cleanupShips()
     }
 }
 
-void demo::repaint()
+void Demo::repaint()
 {
     pthread_mutex_lock (&mutex);
     for(int i=0; i < maxShips; i++)
     {
         if(ships[i]!=NULL && ships[i]->isAlive())
         {
-            applySurface(ships[i]->get_x(), ships[i]->get_y(), AvatarShips[ships[i]->getAvatarType()][ships[i]->getAvatar()], screen, NULL);
-
-//            if(debugEnabled) {
-//                cout<<"Ship nb "<<i<<" position: X = "<<ships[i]->get_x()<<" Y = "<<ships[i]->get_y()<<endl;
-//            }
+            applySurface(ships[i]->getX(), ships[i]->getY(), AvatarShips[ships[i]->getAvatarType()][ships[i]->getAvatar()], screen, NULL);
         }
     }
     pthread_mutex_unlock(&mutex);
 }
 
-void demo::play()
+void Demo::play()
 {
     while(true)
     {
@@ -243,11 +237,6 @@ void demo::play()
             if(event.type == SDL_QUIT)
                 return;
         }
-
-//        if(debugEnabled) {
-//            cout<<"Current ships: "<< curShips<<endl;
-//            cout<<"Max ships: " << maxShips<<endl;
-//        }
 
         cleanupShips();
         if( curShips < maxShips )
@@ -263,13 +252,13 @@ void demo::play()
 }
 
 // random value from [ 0 , max ]
-int demo::randType(int max)
+int Demo::randType(int max)
 {
     return rand()%max;
 }
 
 //  apply ship`s avatar on the background
-void demo::applySurface( int x, int y, SDL_Surface* source, SDL_Surface* destination, SDL_Rect* clip = NULL )
+void Demo::applySurface( int x, int y, SDL_Surface* source, SDL_Surface* destination, SDL_Rect* clip = NULL )
 {
     //Holds offsets
     SDL_Rect offset;

@@ -19,33 +19,77 @@
 
 #include "map.h"
 
-// constructor
-Map::Map(string fileName,bool debug)
+BoardManager::BoardManager(string fileName, bool debug):
+    m_board(NULL),
+    debugEnabled(debug)
 {
-    this->debugEnabled = debug;
-
-    mapa = NULL;
-    if(debugEnabled)
-        cout<<"Wywolanie konstruktora mapy."<<endl;
-
-    init(fileName);
-    allocateMap();
-    mapToArray();
+    init();
 }
 
-// destructor
-Map::~Map()
+BoardManager::~BoardManager()
 {
-    revokeMap();
+    destroyBoard();
 }
 
-vector<Point*> Map::getStartingPoints()
+void BoardManager::init()
 {
-    return vec;
+    this->height = 719;
+    this->width = 1024;
+
+    if(debugEnabled) {
+        cout << "Height: " << this->height << endl;
+        cout << "Width: " << this->width << endl;
+    }
+
+    allocateBoard();
+    readBoardFromFile();
+    findStartingPoints();
+}
+
+// take height of the map
+int BoardManager::getHeight()
+{
+    return height;
+}
+
+// take the width
+int BoardManager::getWidth()
+{
+    return width;
+}
+
+// take virtual map of the roads
+Board BoardManager::getBoard()
+{
+    return m_board;
+}
+
+// allocate memory for the map
+void BoardManager::allocateBoard()
+{
+    m_board = new double*[height];
+    for(int i=0; i<height; i++)
+        m_board[i] = new double[width]();
+}
+
+// free memory
+void BoardManager::destroyBoard()
+{
+    if(m_board!=NULL)
+    {
+        for(int i=0; i<height; i++)
+            delete[] m_board[i];
+        delete[] m_board;
+    }
+}
+
+StartingPoints BoardManager::getStartingPoints()
+{
+    return m_startingPoints;
 }
 
 // find starting points for ships
-Point Map::findStartingPoints()
+void BoardManager::findStartingPoints()
 {
     Point* pkt;
     int counter = 0;
@@ -53,20 +97,20 @@ Point Map::findStartingPoints()
     //vertical searching on the edges
     for(int i = 0; i < height; i++)
     {
-        if(mapa[i][0] == 1)
+        if(m_board[i][0] == 1)
         {
             counter++;
             pkt = new Point(0,i);
-            vec.push_back(pkt);
+            m_startingPoints.push_back(pkt);
             if(debugEnabled)
                 cout<<"Found point: x="<<pkt->x<<" y="<<pkt->y<<endl;
         }
 
-        if(mapa[i][width - 1] == 1)
+        if(m_board[i][width - 1] == 1)
         {
             counter++;
             pkt = new Point(width - 1,i);
-            vec.push_back(pkt);
+            m_startingPoints.push_back(pkt);
             if(debugEnabled)
                 cout<<"Found point: x="<<pkt->x<<" y="<<pkt->y<<endl;
         }
@@ -74,20 +118,20 @@ Point Map::findStartingPoints()
     //horizontal searching on the edges
     for(int i=0; i<width; i++)
     {
-        if(mapa[0][i] == 1)
+        if(m_board[0][i] == 1)
         {
             counter++;
             pkt = new Point(i,0);
-            vec.push_back(pkt);
+            m_startingPoints.push_back(pkt);
             if(debugEnabled)
                 cout<<"Found point: x="<<pkt->x<<" y="<<pkt->y<<endl;
 
         }
-        if(mapa[height - 1][i] == 1)
+        if(m_board[height - 1][i] == 1)
         {
             counter++;
             pkt = new Point(i,height - 1);
-            vec.push_back(pkt);
+            m_startingPoints.push_back(pkt);
             if(debugEnabled)
                 cout<<"Found point: x="<<pkt->x<<" y="<<pkt->y<<endl;
         }
@@ -95,61 +139,30 @@ Point Map::findStartingPoints()
 
     if(debugEnabled)
         cout<<"Found "<<counter<<" points"<<endl;
-
-    return displayFirstPoints(vec);
 }
 
 // display found points
-Point Map::displayFirstPoints(vector< Point* >& vec)
+void BoardManager::displayFirstPoints(StartingPoints& startingPoints)
 {
-    Point pkt(0,0);
-
-    if(!debugEnabled)
-        return pkt;
-
-    if(vec.size() < 1)
-        return pkt;
-
-    for(unsigned int iter=0; iter < vec.size(); iter++)
+    for(unsigned int iter=0; iter < startingPoints.size(); iter++)
     {
-        cout<<"Starting points X: "<<vec[iter]->x<<" Y: "<<vec[iter]->y<<endl;
-    }
-    pkt = *(vec[0]);
-
-    return pkt;
-}
-
-void Map::init(string fileName)
-{
-//    obraz = new Magick::Image();
-//    obraz->read(fileName.c_str());
-
-    height = 719;//obraz->rows();
-    width = 1024;//obraz->columns();
-    depth = 8;//obraz->depth();
-
-    if(debugEnabled)
-    {
-        cout << "Height: " << height << endl;
-        cout << "Width: " << width << endl;
-        cout << "Depth: " << depth << endl;
+        cout<<"Starting points X: "<<startingPoints[iter]->x<<" Y: "<<startingPoints[iter]->y<<endl;
     }
 }
 
 // write virtual map to the file
-void Map::writeMapToFile(string fileName)
+void BoardManager::saveToFile(string fileName)
 {
+    int ret=-1;
+    fstream str;
+
     if(debugEnabled)
         cout<<"Writing to the file: "<<fileName<<endl;
 
-    int ret=-1;
     string command = "rm " + fileName;
-    fstream str;
-
     ret = system(command.c_str());
 
-    if(debugEnabled)
-    {
+    if(debugEnabled) {
         if(!ret)
             cout<<"System: deleting file "<<fileName<<endl;
         else
@@ -158,11 +171,9 @@ void Map::writeMapToFile(string fileName)
 
     str.open(fileName.c_str(),ios_base::out);
 
-    for(int i=0; i<height; i++)
-    {
-        for(int j=0; j<width; j++)
-        {
-            if(mapa[i][j])
+    for(int i=0; i<height; i++) {
+        for(int j=0; j<width; j++) {
+            if(m_board[i][j])
                 str <<"o";
             else
                 str <<'.';
@@ -172,7 +183,7 @@ void Map::writeMapToFile(string fileName)
 }
 
 // convert bitmap to the virtual map with roads for the ships
-void Map::mapToArray()
+void BoardManager::readBoardFromFile()
 {
     ifstream file;
     string line;
@@ -184,59 +195,13 @@ void Map::mapToArray()
         {
             std::stringstream   linestream(line);
             linestream >> x >> y;
-            mapa[y][x] = 1;
+            m_board[y][x] = 1;
         }
+        file.close();
     }
-
-    file.close();
-}
-
-// allocate memory for the map
-bool Map::allocateMap()
-{
-    mapa = new double*[height];
-    for(int i=0; i<height; i++)
-        mapa[i] = new double[width];
-    return true;
-}
-
-
-// free memory
-void Map::revokeMap()
-{
-    if(debugEnabled)
-        cout<< "Destructor."<<endl;
-
-    if(mapa!=NULL)
+    else
     {
-        for(int i=0; i<height; i++)
-            delete[] mapa[i];
-        delete[] mapa;
-
-        delete obraz;
+        cout<<"Error: Cannot read board from file. Exiting..."<<endl;
+        exit(1);
     }
-}
-
-// take color depth
-int Map::getDepth()
-{
-    return depth;
-}
-
-// take height of the map
-int Map::getHeight()
-{
-    return height;
-}
-
-// take virtual map of the roads
-double** Map::getMap()
-{
-    return mapa;
-}
-
-// take the width
-int Map::getWidth()
-{
-    return width;
 }
