@@ -1,23 +1,31 @@
 cmake_minimum_required(VERSION 2.8)
 project(SeaPortSimulator)
-#add_subdirectory(src)
-set( EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin )
-set(SEA_PORT_SRCS
-        src/main.cpp
-        src/demo.cpp
-        src/map.cpp
-        src/ship.cpp)
+
+add_subdirectory(src)
+add_subdirectory(share)
+
+SET(MAJOR_VERSION "1")
+SET(MINOR_VERSION "0")
+SET(PATCH_VERSION "0")
+
+set(CPACK_GENERATOR "DEB")
+
+if(CMAKE_SYSTEM_PROCESSOR MATCHES ".*x86_64.*")
+    set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
+else()
+    set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "i386")
+endif()
+
+SET(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}_${MAJOR_VERSION}.${MINOR_VERSION}.${PATCH_VERSION}_${CPACK_DEBIAN_PACKAGE_ARCHITECTURE}")
+SET(CPACK_SOURCE_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}_${MAJOR_VERSION}.${MINOR_VERSION}.${PATCH_VERSION}")
+set(CPACK_PACKAGE_VERSION_MAJOR ${MAJOR_VERSION})
+set(CPACK_PACKAGE_VERSION_MINOR ${MINOR_VERSION})
+set(CPACK_PACKAGE_VERSION_PATCH ${PATCH_VERSION})
+set(CPACK_DEBIAN_ARCHITECTURE ${CMAKE_SYSTEM_PROCESSOR})
+set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Simulates sea port application. Uses pthreads.")
+set(CPACK_PACKAGE_CONTACT "patryk.lukasz.gorniak@gmail.com")
+include(CPack)
 
 
-set(CMAKE_CXX_FLAGS "-g -Wall -std=c++11 -DMAGICKCORE_HDRI_ENABLE=0 -DMAGICKCORE_QUANTUM_DEPTH=8")
 
-
-find_package(ImageMagick COMPONENTS Magick++)
-find_package(SDL)
-find_package(SDL_image)
-
-include_directories(${ImageMagick_INCLUDE_DIRS} ${SDL_INCLUDE_DIRS} ${SDL_IMAGE_INCLUDE_DIRS})
-add_executable(${PROJECT_NAME} ${SEA_PORT_SRCS})
-target_link_libraries(${PROJECT_NAME} ${ImageMagick_LIBRARIES} ${SDL_IMAGE_LIBRARIES} ${SDL_LIBRARY})
-
-add_subdirectory(resources)

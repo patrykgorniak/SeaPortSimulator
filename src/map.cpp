@@ -19,9 +19,10 @@
 
 #include "map.h"
 
-BoardManager::BoardManager(string fileName, bool debug):
+BoardManager::BoardManager(string resourcePath, bool debug):
     m_board(NULL),
-    debugEnabled(debug)
+    debugEnabled(debug),
+    resourcePath(resourcePath)
 {
     init();
 }
@@ -187,7 +188,8 @@ void BoardManager::readBoardFromFile()
 {
     ifstream file;
     string line;
-    file.open("map.bin");
+    cout<< resourcePath<<endl;
+    file.open(resourcePath + "maps/maps.bin");
     int x,y;
     if(file.is_open())
     {

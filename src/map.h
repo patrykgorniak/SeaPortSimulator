@@ -36,7 +36,7 @@ typedef vector<Point*> StartingPoints;
 class BoardManager
 {
 public:
-    BoardManager(string fileName, bool debug);
+    BoardManager(string resourcePath, bool debug);
     ~BoardManager();
 
     void saveToFile(string);
@@ -52,6 +52,7 @@ private:
     StartingPoints m_startingPoints;
     int width, height;
     bool debugEnabled;
+    std::string resourcePath;
 
     void init();
     void allocateBoard();

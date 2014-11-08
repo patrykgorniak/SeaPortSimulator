@@ -18,7 +18,7 @@
 
 #include "demo.h"
 
-Demo::Demo(string fileName, int maxShips,int delay,bool debug):
+Demo::Demo(string resourcePath, int maxShips,int delay,bool debug):
     ships(0)
 {
     // Initializing variables
@@ -36,7 +36,7 @@ Demo::Demo(string fileName, int maxShips,int delay,bool debug):
     thread = new pthread_t[maxShips];
 
     // map initializing
-    initObjects("maps/maps.jpeg");
+    initObjects(resourcePath);
 
     //    map->saveToFile("mapa.txt");
 
@@ -45,10 +45,10 @@ Demo::Demo(string fileName, int maxShips,int delay,bool debug):
         freeRoads.push_back(i);
 
     // initializing SDL
-    initSDL(fileName);
+    initSDL(resourcePath + "scene/scene.bmp");
 
     // load ships avatars from files
-    loadAvatarShip("ship/","");
+    loadAvatarShip(resourcePath + "ship/","");
 }
 
 

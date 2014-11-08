@@ -38,6 +38,16 @@ bool help()
         return true;
 }
 
+std::string getResourcePath()
+{
+    const int length=128;
+    char buffer[length];
+    readlink("/proc/self/exe", buffer, length);
+    std::string path = buffer;
+    std::string::size_type end = path.find_last_of("/");
+    return path.substr(0,end) + "/../share/SeaPortSimulator/";
+}
+
 
 int main(int argc, char **argv)
 {
@@ -57,9 +67,8 @@ int main(int argc, char **argv)
             exit(0);
     }
 
-
     srand(time(0));
-    Demo *m_demo = new Demo("scene/scena.jpeg", ships, speed, debug);
+    Demo *m_demo = new Demo(getResourcePath() , ships, speed, debug);
     m_demo->play();
     exit(0);
 }
