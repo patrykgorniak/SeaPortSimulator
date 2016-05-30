@@ -189,7 +189,7 @@ void BoardManager::readBoardFromFile()
     ifstream file;
     string line;
     cout<< resourcePath<<endl;
-    file.open(resourcePath + "maps/maps.bin");
+    file.open(resourcePath + "maps/map_1.bin");
     int x,y;
     if(file.is_open())
     {

@@ -1,0 +1,9 @@
+=========== SeaPortSimulator ==============
+
+Multi-thread application which simulates ship marine.
+
+
+Requirements:
+libsdl-dev
+libsdl-image1.2-dev
+
